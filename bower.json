@@ -5,7 +5,12 @@
     "Eric Bidelman <ebidel@>"
   ],
   "description": "Element to wrap the Beacon API functionality.",
-  "keywords": "seed, polymer, web-components",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "beacon api"
+  ],
   "main": "beacon-send.html",
   "license": "Apache2",
   "homepage": "https://github.com/ebidel/beacon-send/",
