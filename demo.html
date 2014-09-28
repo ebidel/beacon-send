@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>beacon-send element demo</title>
+  <script src="../platform/platform.js"></script>
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=RobotoDraft">
+  <link rel="import" href="beacon-send.html">
+  <style>
+    body {
+      font-family: 'RobotoDraft', sans-serif;
+      padding: 2em;
+      background: #ddd;
+    }
+    section {
+      background: #fff;
+      padding: 1em 2em;
+      border-radius: 3px;
+    }
+    pre {
+      font-size: 28px;
+      line-height: 50px;
+    }
+  </style>
+</head>
+<body unresolved fullbleed layout vertical center-center>
+
+<section>
+
+<p><code>&lt;beacon-send></code> is a web component wrapper for the <a href="https://developer.mozilla.org/en-US/docs/Web/API/navigator">Beacon API</a>. It sends the set data to the server when the page is unloaded.</p>
+
+<pre>&lt;beacon-send url="https://your.server.com/log"
+             data="Log this">&lt;/beacon-send></pre>
+
+<p>To try it:</p>
+<ol>
+  <li>Close this page</li>
+  <li>Open <a href="https://putsreq.herokuapp.com/Dt7t2QzUkG18aDTMMcop/inspect" target="_blank">https://putsreq.herokuapp.com/Dt7t2QzUkG18aDTMMcop/inspect</a> and look for your logged message.</li>
+</ol>
+
+<beacon-send url="https://putsreq.herokuapp.com/Dt7t2QzUkG18aDTMMcop"
+             data="Message sent by &lt;beacon-send>!">
+</beacon-send>
+
+</section>
+
+<script>
+document.addEventListener('beacon-queue', function(e) {
+  console.log('queued:', e.detail.success);
+});
+</script>
+
+</body>
+</html>

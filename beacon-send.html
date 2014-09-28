@@ -1,0 +1,129 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+Element to wrap the Beacon API (`navigator.sendBeacon`).
+
+To learn more about the API, see https://developer.mozilla.org/en-US/docs/Web/API/navigator.sendBeacon.
+
+##### Example - basic logging a message
+
+    <beacon-send url="https://yourserver.com/log" data="Log this"></beacon-send>
+
+Sends "Log this" to yourserver.com when the page is unloaded.
+
+##### Example - sending `Blob` data
+
+    <beacon-send url="https://yourserver.com/log"></beacon-send>
+    <script>
+      var bs = document.querySelector('beacon-send');
+      bs.data = new Blob(['<b>Hello world</b>'], {type: 'text/html'});
+    </script>
+
+
+##### Example - explicitly controlling when data is sent
+
+    <beacon-send url="https://yourserver.com" data="Log this" dontSendOnClose></beacon-send>
+
+    <button on-click="send()">Send</button>
+
+    <script>
+      document.addEventListener('beacon-queue', function(e) {
+        console.log('queued:', e.detail.success);
+      });
+
+      function send() {
+        document.querySelector('beacon-send').send();
+      }
+    </script>
+
+@element beacon-send
+@blurb Element providing solution to no problem in particular.
+@status beta
+@homepage http://ebidel.github.io/beacon-send
+-->
+<polymer-element name="beacon-send" attributes="data url dontSendOnClose" hidden>
+<script>
+(function() {
+
+var UNLOAD_EVENT_ = 'unload';
+
+Polymer({
+
+  /**
+   * Fired when the message was queued. You should only need this event when
+   * using `send()` explicitly.
+   *
+   * @event beacon-queue
+   * @param {Object} detail
+   *   @param {string} detail.success True if the message was queued successfully.
+   */
+
+  /**
+   * The url of the remote server to send data to.
+   *
+   * @attribute url
+   * @type string
+   * @default null
+   */
+  url: null,
+
+  /**
+   * The data to send to the remove server.
+   *
+   * @attribute data
+   * @type ArrayBufferView|Blob|String|FormData
+   * @default null
+   */
+  data: null,
+
+  /**
+   * If `true`, does not send data when the page's `unload` event is fired.
+   *
+   * @attribute dontSendOnClose
+   * @type bool
+   * @default true
+   */
+  dontSendOnClose: false,
+
+  created: function() {
+    if (!('sendBeacon' in navigator)) {
+      console.warn(this.localName +
+                   ': the Beacon API is not available in this browser.');
+    }
+  },
+
+  ready: function() {
+    this.unloadHandler_ = this.send.bind(this);
+    this.dontSendOnCloseChanged();
+  },
+
+  dontSendOnCloseChanged: function() {
+    if (this.dontSendOnClose) {
+      window.removeEventListener(UNLOAD_EVENT_, this.unloadHandler_);
+    } else {
+      window.addEventListener(UNLOAD_EVENT_, this.unloadHandler_);
+    }
+  },
+
+  /**
+   * Explicitly sends the set data to the remote URL.
+   *
+   * Note: By default `send()` is automatically called when the page unloads.
+   * You should only use this method if `dontSendOnClose` is set and you want
+   * more control over when data is sent to the server. 
+   *
+   * @method send
+   * @return {bool} Returns true if the message was successfully queued by the browser.
+   */
+  send: function() {
+    var success = navigator.sendBeacon(this.url, this.data);
+
+    this.fire('beacon-queue', {success: success});
+
+    return success;
+  }
+});
+
+})();
+</script>
+</polymer-element>
