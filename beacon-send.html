@@ -21,7 +21,7 @@ Sends "Log this" to yourserver.com when the page is unloaded.
 
 ##### Example - explicitly controlling when data is sent
 
-    <beacon-send url="https://yourserver.com" data="Log this" dontSendOnClose></beacon-send>
+    <beacon-send url="https://yourserver.com" data="Log this" manual></beacon-send>
 
     <button on-click="send()">Send</button>
 
@@ -40,89 +40,86 @@ Sends "Log this" to yourserver.com when the page is unloaded.
 @status beta
 @homepage https://github.com/ebidel/beacon-send
 -->
-<polymer-element name="beacon-send" attributes="data url dontSendOnClose" hidden>
+
 <script>
-(function() {
+  Polymer({
+    is: 'beacon-send',
 
-var UNLOAD_EVENT_ = 'unload';
+    /**
+     * Fired when the message was queued. You should only need this event when
+     * using `send()` explicitly.
+     *
+     * @event beacon-queue
+     * @param {Object} detail
+     *   @param {string} detail.success True if the message was queued successfully.
+     */
 
-Polymer({
+    properties: {
 
-  /**
-   * Fired when the message was queued. You should only need this event when
-   * using `send()` explicitly.
-   *
-   * @event beacon-queue
-   * @param {Object} detail
-   *   @param {string} detail.success True if the message was queued successfully.
-   */
+      /**
+       * The url of the remote server to send data to.
+       *
+       * @attribute url
+       * @type string
+       * @default null
+       */
+      url: String,
 
-  /**
-   * The url of the remote server to send data to.
-   *
-   * @attribute url
-   * @type string
-   * @default null
-   */
-  url: null,
+      /**
+       * The data to send to the remove server.
+       *
+       * @attribute data
+       * @type ArrayBufferView|Blob|String|FormData
+       * @default null
+       */
+      data: Object,
 
-  /**
-   * The data to send to the remove server.
-   *
-   * @attribute data
-   * @type ArrayBufferView|Blob|String|FormData
-   * @default null
-   */
-  data: null,
+      /**
+       * If `true`, the data are sent only when explicitly calling send() method.
+       *
+       * @attribute manual
+       * @type bool
+       * @default true
+       */
+      manual: {
+        type: Boolean,
+        value: false,
+        observer: '_manualChanged'
+      },
+    },
 
-  /**
-   * If `true`, does not send data when the page's `unload` event is fired.
-   *
-   * @attribute dontSendOnClose
-   * @type bool
-   * @default true
-   */
-  dontSendOnClose: false,
+    created: function() {
+      if (!('sendBeacon' in navigator)) {
+        console.warn(this.localName + ': the Beacon API is not available in this browser.');
+      }
+    },
 
-  created: function() {
-    if (!('sendBeacon' in navigator)) {
-      console.warn(this.localName +
-                   ': the Beacon API is not available in this browser.');
+    ready: function() {
+      this._unloadHandler = this.send.bind(this);
+      this._manualChanged();
+    },
+
+    _manualChanged: function() {
+      window.removeEventListener('unload', this._unloadHandler);
+      if (!this.manual) {
+        window.addEventListener('unload', this._unloadHandler);
+      }
+    },
+
+    /**
+     * Explicitly sends the set data to the remote URL.
+     *
+     * Note: By default `send()` is automatically called when the page unloads.
+     * You should only use this method if `manual` is set and you want
+     * more control over when data is sent to the server.
+     *
+     * @method send
+     * @return {bool} Returns true if the message was successfully queued by the browser.
+     */
+    send: function() {
+      var success = navigator.sendBeacon(this.url, this.data);
+      this.fire('beacon-queue', {success: success});
+      return success;
     }
-  },
-
-  ready: function() {
-    this.unloadHandler_ = this.send.bind(this);
-    this.dontSendOnCloseChanged();
-  },
-
-  dontSendOnCloseChanged: function() {
-    if (this.dontSendOnClose) {
-      window.removeEventListener(UNLOAD_EVENT_, this.unloadHandler_);
-    } else {
-      window.addEventListener(UNLOAD_EVENT_, this.unloadHandler_);
-    }
-  },
-
-  /**
-   * Explicitly sends the set data to the remote URL.
-   *
-   * Note: By default `send()` is automatically called when the page unloads.
-   * You should only use this method if `dontSendOnClose` is set and you want
-   * more control over when data is sent to the server. 
-   *
-   * @method send
-   * @return {bool} Returns true if the message was successfully queued by the browser.
-   */
-  send: function() {
-    var success = navigator.sendBeacon(this.url, this.data);
-
-    this.fire('beacon-queue', {success: success});
-
-    return success;
-  }
-});
-
-})();
+  });
 </script>
-</polymer-element>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>beacon-send basic test</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../beacon-send.html">
+</head>
+<body>
+
+  <beacon-send url="https://auto.example.org"
+               data="auto data">
+  </beacon-send>
+
+  <script>
+    var beacon = document.querySelector('beacon-send');
+
+    describe('<beacon-send> auto', function() {
+
+      beforeEach(function () {
+        sinon.stub(navigator, 'sendBeacon').returns(true);
+      });
+
+      afterEach(function () {
+        navigator.sendBeacon.restore();
+      });
+
+      it('should not be set to manual', function() {
+        assert.isFalse(beacon.manual, 'beacon.manual');
+      });
+
+      it('should send data and dispatch event on unload', function(done) {
+        var count = 0;
+        beacon.addEventListener('beacon-queue', function(e) {
+          if (navigator.sendBeacon.callCount === undefined) {
+            // sendBeacon is not a stub anymore
+            return;
+          }
+          count += navigator.sendBeacon.callCount;
+          assert.equal(navigator.sendBeacon.args[0][0], 'https://auto.example.org');
+          assert.equal(navigator.sendBeacon.args[0][1], 'auto data');
+          assert.isTrue(e.detail.success, 'e.detail.success');
+        });
+
+        window.dispatchEvent(new Event('unload'));
+
+        // allow for multiple beacon-queue events to be dispatched, if any.
+        window.setTimeout(function() {
+          assert.equal(count, 1, 'auto call count');
+          done();
+        }, 200);
+      });
+
+    });
+  </script>
+
+</body>
+</html>
