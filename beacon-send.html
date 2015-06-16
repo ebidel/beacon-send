@@ -51,35 +51,29 @@ Sends "Log this" to yourserver.com when the page is unloaded.
      *
      * @event beacon-queue
      * @param {Object} detail
-     *   @param {string} detail.success True if the message was queued successfully.
+     * @param {string} detail.success True if the message was queued successfully.
      */
 
     properties: {
 
       /**
        * The url of the remote server to send data to.
-       *
-       * @attribute url
-       * @type string
-       * @default null
        */
-      url: String,
+      url: {
+        type: String,
+        value: null
+      },
 
       /**
        * The data to send to the remove server.
-       *
-       * @attribute data
-       * @type ArrayBufferView|Blob|String|FormData
-       * @default null
        */
-      data: Object,
+      data: {
+        type: Object,
+        value: null
+      },
 
       /**
        * If `true`, the data are sent only when explicitly calling send() method.
-       *
-       * @attribute manual
-       * @type bool
-       * @default true
        */
       manual: {
         type: Boolean,

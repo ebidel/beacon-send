@@ -24,7 +24,7 @@
     ".bowerrc"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#1.0.3"
+    "polymer": "Polymer/polymer#^1.0.3"
   },
   "devDependencies": {
     "web-component-tester": "~3.1.7"
