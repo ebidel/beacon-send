@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>beacon-send basic test</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../beacon-send.html">
+</head>
+<body>
+
+  <beacon-send url="https://manual.example.org"
+               data="manual data" manual>
+  </beacon-send>
+
+  <script>
+    var beacon = document.querySelector('beacon-send');
+
+    describe('<beacon-send> manual', function() {
+
+      beforeEach(function () {
+        sinon.stub(navigator, 'sendBeacon').returns(true);
+      });
+
+      afterEach(function () {
+        navigator.sendBeacon.restore();
+      });
+
+      it('should send data', function() {
+        beacon.send();
+        assert.equal(navigator.sendBeacon.callCount, 1, 'manual call count');
+        assert.equal(navigator.sendBeacon.args[0][0], 'https://manual.example.org');
+        assert.equal(navigator.sendBeacon.args[0][1], 'manual data');
+      });
+
+      it('should dispatch event', function(done) {
+        beacon.addEventListener('beacon-queue', function(e) {
+          assert.isTrue(e.detail.success, 'e.detail.success');
+          done();
+        });
+        beacon.send();
+      });
+
+      it('should not activate on unload', function(done) {
+        beacon.addEventListener('beacon-queue', function(e) {
+          assert.equal(navigator.sendBeacon.callCount, 0, 'call count');
+          throw new Error('did not expect beacon-queue event');
+        });
+        window.dispatchEvent(new Event('unload'));
+        window.setTimeout(done, 200);
+      });
+
+    });
+  </script>
+
+</body>
+</html>
