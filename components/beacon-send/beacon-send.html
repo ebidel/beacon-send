@@ -1,0 +1,122 @@
+<!-- Copyright Eric Bidelman <ebidel@gmail.com> -->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+Element to wrap the Beacon API (`navigator.sendBeacon`).
+
+To learn more about the API, see https://developer.mozilla.org/en-US/docs/Web/API/navigator.sendBeacon.
+
+##### Example - basic logging a message
+
+    <beacon-send url="https://yourserver.com/log" data="Log this"></beacon-send>
+
+Sends "Log this" to yourserver.com when the page is unloaded.
+
+##### Example - sending `Blob` data
+
+    <beacon-send url="https://yourserver.com/log"></beacon-send>
+    <script>
+      var bs = document.querySelector('beacon-send');
+      bs.data = new Blob(['<b>Hello world</b>'], {type: 'text/html'});
+    </script>
+
+##### Example - explicitly controlling when data is sent
+
+    <beacon-send url="https://yourserver.com" data="Log this" manual></beacon-send>
+
+    <button on-click="send()">Send</button>
+
+    <script>
+      document.addEventListener('beacon-queue', function(e) {
+        console.log('queued:', e.detail.success);
+      });
+
+      function send() {
+        document.querySelector('beacon-send').send();
+      }
+    </script>
+
+@element beacon-send
+@blurb Element providing solution to no problem in particular.
+@status beta
+@demo
+@homepage https://github.com/ebidel/beacon-send
+-->
+
+<script>
+  Polymer({
+    is: 'beacon-send',
+
+    /**
+     * Fired when the message was queued. You should only need this event when
+     * using `send()` explicitly.
+     *
+     * @event beacon-queue
+     * @param {Object} detail
+     * @param {string} detail.success True if the message was queued successfully.
+     */
+
+    properties: {
+
+      /**
+       * The url of the remote server to send data to.
+       */
+      url: {
+        type: String,
+        value: null
+      },
+
+      /**
+       * The data to send to the remove server.
+       */
+      data: {
+        type: Object,
+        value: null
+      },
+
+      /**
+       * If `true`, the data are sent only when explicitly calling send() method.
+       */
+      manual: {
+        type: Boolean,
+        value: false,
+        observer: '_manualChanged'
+      },
+    },
+
+    created: function() {
+      if (!('sendBeacon' in navigator)) {
+        console.warn(this.localName + ': the Beacon API is not available in this browser.');
+      }
+    },
+
+    ready: function() {
+      this._unloadHandler = this.send.bind(this);
+      this._manualChanged();
+    },
+
+    _manualChanged: function() {
+      window.removeEventListener('unload', this._unloadHandler);
+      if (!this.manual) {
+        window.addEventListener('unload', this._unloadHandler);
+      }
+    },
+
+    /**
+     * Explicitly sends the set data to the remote URL.
+     *
+     * Note: By default `send()` is automatically called when the page unloads.
+     * You should only use this method if `manual` is set and you want
+     * more control over when data is sent to the server.
+     *
+     * @method send
+     * @return {bool} Returns true if the message was successfully queued by the browser.
+     */
+    send: function() {
+      var success = navigator.sendBeacon(this.url, this.data);
+      this.fire('beacon-queue', {success: success});
+      return success;
+    }
+  });
+</script>

@@ -1,0 +1,33 @@
+{
+  "name": "beacon-send",
+  "version": "1.0.1",
+  "authors": [
+    "Eric Bidelman <ebidel@>"
+  ],
+  "description": "Web component to wrap the Beacon API.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "custom element",
+    "polymer",
+    "beacon api",
+    "beacon",
+    "communication"
+  ],
+  "main": "beacon-send.html",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ebidel/beacon-send/",
+  "ignore": [
+    "**/.*",
+    "test",
+    "tests",
+    ".bowerrc"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.3"
+  },
+  "devDependencies": {
+    "web-component-tester": "~3.1.7",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.4"
+  }
+}
